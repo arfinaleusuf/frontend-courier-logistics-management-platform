@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { baseurl } from "../services/BaseUrl";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
+import { baseurl } from "../services/BaseUrl";
 
 
 const SignUp = () => {
@@ -12,6 +13,8 @@ const SignUp = () => {
     const [lastname, setLastname] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("");
+
+    const navigate = useNavigate();
 
     const handleSignup = async (e) => {
         e.preventDefault();
@@ -25,18 +28,34 @@ const SignUp = () => {
             role
         };
 
-        const res = await fetch(`${baseurl}/createuser`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(userData)
-        })
+        try {
+            const res = await fetch(`${baseurl}/createuser`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(userData)
+            });
 
-        const data = await res.json();
-        toast(data?.message || data?.detail)
-        console.log(data);
+            const data = await res.json();
+
+            if (!res.ok) {
+                toast.error(data?.detail || "Signup failed");
+                return;
+            }
+
+            toast.success("Account created successfully!");
+
+            setTimeout(() => {
+                navigate("/login");
+            }, 1000);
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Server connection failed");
+        }
     };
+
 
     return (
         <div className="hero bg-base-200 min-h-screen">
